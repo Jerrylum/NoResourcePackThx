@@ -6,7 +6,9 @@
   "mixins": [
   ],
   "client": [
-    "ExampleMixin"
+    "ExampleMixin",
+    "ClientPlayNetworkHandlerMixin",
+    "ClientPlayNetworkHandlerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
