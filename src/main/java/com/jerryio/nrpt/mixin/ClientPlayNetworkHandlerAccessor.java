@@ -8,7 +8,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
-import net.minecraft.text.Text;
 
 @Mixin(ClientPlayNetworkHandler.class)
 public interface ClientPlayNetworkHandlerAccessor {
@@ -24,9 +23,4 @@ public interface ClientPlayNetworkHandlerAccessor {
 
     @Invoker
     void invokeFeedbackAfterDownload(java.util.concurrent.CompletableFuture<?> downloadFuture);
-
-    @Invoker
-    static Text invokeGetServerResourcePackPrompt(Text defaultPrompt, Text customPrompt) {
-        throw new AssertionError();
-    }
 }

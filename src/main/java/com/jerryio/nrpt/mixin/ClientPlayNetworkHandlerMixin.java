@@ -9,7 +9,7 @@ import com.jerryio.nrpt.NoResourcePackThxMod;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
-import net.minecraft.client.option.ServerList;
+import net.minecraft.client.options.ServerList;
 import net.minecraft.network.listener.ClientPlayPacketListener;
 import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
 import net.minecraft.network.packet.s2c.play.ResourcePackSendS2CPacket;
@@ -31,43 +31,41 @@ public abstract class ClientPlayNetworkHandlerMixin
         ClientPlayNetworkHandlerAccessor me = (ClientPlayNetworkHandlerAccessor) this;
         ServerInfo serverInfo = me.getClient().getCurrentServerEntry();
 
-        if (serverInfo != null && serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.ENABLED) {
+        if (serverInfo != null && serverInfo.getResourcePack() == ServerInfo.ResourcePackState.ENABLED) {
             me.invokeSendResourcePackStatus(ResourcePackStatusC2SPacket.Status.ACCEPTED);
-            me.invokeFeedbackAfterDownload(me.getClient().getResourcePackProvider().download(url, sha1, true));
+            me.invokeFeedbackAfterDownload(me.getClient().getResourcePackDownloader().download(url, sha1));
 
             NoResourcePackThxMod.LOGGER.info("Resource pack has been accepted");
         } else if (serverInfo == null ||
-                serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.PROMPT) {
+                serverInfo.getResourcePack() == ServerInfo.ResourcePackState.PROMPT) {
             // serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.DISABLED
             // BEHAIVOR: do not ask the player again if the player said no
 
             me.invokeSendResourcePackStatus(ResourcePackStatusC2SPacket.Status.ACCEPTED);
 
             me.getClient().execute(
-                    () -> me.getClient().setScreen(new ConfirmScreen(
+                    () -> me.getClient().openScreen(new ConfirmScreen(
                             result -> {
-                                me.getClient().setScreen(null);
+                                me.getClient().openScreen(null);
                                 ServerInfo serverInfo2 = me.getClient().getCurrentServerEntry();
 
                                 me.invokeSendResourcePackStatus(ResourcePackStatusC2SPacket.Status.ACCEPTED);
 
                                 if (result) {
                                     me.invokeFeedbackAfterDownload(
-                                            me.getClient().getResourcePackProvider().download(url, sha1, true));
+                                            me.getClient().getResourcePackDownloader().download(url, sha1));
                                 }
 
                                 if (serverInfo2 != null) {
-                                    serverInfo2.setResourcePackPolicy(
-                                            result ? ServerInfo.ResourcePackPolicy.ENABLED
-                                                    : ServerInfo.ResourcePackPolicy.DISABLED);
+                                    serverInfo2.setResourcePackState(
+                                            result ? ServerInfo.ResourcePackState.ENABLED
+                                                    : ServerInfo.ResourcePackState.DISABLED);
 
                                     ServerList.updateServerListEntry(serverInfo2);
                                 }
                             },
                             new TranslatableText("multiplayer.texturePrompt.line1"),
-                            ClientPlayNetworkHandlerAccessor.invokeGetServerResourcePackPrompt(
-                                    new TranslatableText("multiplayer.texturePrompt.line2"),
-                                    packet.getPrompt()))));
+                            new TranslatableText("multiplayer.texturePrompt.line2"))));
 
             NoResourcePackThxMod.LOGGER.info("Asking the player if they want to accept the resource pack");
         } else {
