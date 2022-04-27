@@ -1,11 +1,11 @@
-package net.fabricmc.example.mixin;
+package com.jerryio.nrpt.mixin;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import net.fabricmc.example.ExampleMod;
+import com.jerryio.nrpt.NoResourcePackThxMod;
 import net.minecraft.client.gui.screen.ConfirmScreen;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.network.ServerInfo;
@@ -35,7 +35,7 @@ public abstract class ClientPlayNetworkHandlerMixin
             me.invokeSendResourcePackStatus(ResourcePackStatusC2SPacket.Status.ACCEPTED);
             me.invokeFeedbackAfterDownload(me.getClient().getResourcePackProvider().download(url, sha1, true));
 
-            ExampleMod.LOGGER.info("Resource pack has been enabled");
+            NoResourcePackThxMod.LOGGER.info("Resource pack has been accepted");
         } else if (serverInfo == null ||
                 serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.PROMPT) {
             // serverInfo.getResourcePackPolicy() == ServerInfo.ResourcePackPolicy.DISABLED
@@ -69,11 +69,11 @@ public abstract class ClientPlayNetworkHandlerMixin
                                     new TranslatableText("multiplayer.texturePrompt.line2"),
                                     packet.getPrompt()))));
 
-            ExampleMod.LOGGER.info("Asking the player if they want to accept the resource pack");
+            NoResourcePackThxMod.LOGGER.info("Asking the player if they want to accept the resource pack");
         } else {
             me.invokeSendResourcePackStatus(ResourcePackStatusC2SPacket.Status.ACCEPTED);
 
-            ExampleMod.LOGGER.info("Resource pack has been disabled");
+            NoResourcePackThxMod.LOGGER.info("Resource pack has been ignored");
         }
 
         ci.cancel();
