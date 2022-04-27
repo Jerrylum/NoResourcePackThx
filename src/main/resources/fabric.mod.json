@@ -13,7 +13,7 @@
     "sources": "https://github.com/Jerrylum/NoResourcePackThx"
   },
 
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/nrpt/icon.png",
 
   "environment": "*",
