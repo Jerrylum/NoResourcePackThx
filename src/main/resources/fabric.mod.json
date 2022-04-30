@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "nrpt",
-  "version": "${version}",
+  "version": "@MOD_VERSION@",
 
   "name": "No Resource Pack Thx",
   "description": "Client will NOT be kicked from the server if they decline to use the resource pack from the server.",
@@ -27,10 +27,10 @@
   ],
 
   "depends": {
-    "fabricloader": ">=0.13.3",
+    "fabricloader": ">=@FABRICLOADER_VERSION@",
     "fabric": "*",
-    "minecraft": "~1.18.2",
-    "java": ">=17"
+    "minecraft": "@COMPATIBILITY_VERSION@",
+    "java": ">=@JAVA_VERSION_VARIOUS@"
   },
   "suggests": {
     "another-mod": "*"

@@ -1,10 +1,31 @@
+
 plugins {
 	id 'fabric-loom' version '0.11-SNAPSHOT'
 	id 'maven-publish'
+	id 'com.github.hexomod.macro.preprocessor' version '0.9'
+	id 'com.github.hexomod.replace.token.preprocessor' version '0.4'
 }
 
+
+// get args from gradle
+
+String argsMinecraftVersion = System.getProperty("minecraft-version", default_minecraft_version)
+String argsMinecraftCompatibilityVersion = System.getProperty("minecraft-compatibility-version", default_minecraft_compatibility_version)
+
+String argsYarnMappings = System.getProperty("yarn-mappings", default_yarn_mappings)
+String argsFabricLoaderVersion = System.getProperty("fabric-loader", default_loader_version)
+
+String argsFabricVersion = System.getProperty("fabric", default_fabric_version)
+
+String argsJavaVersion = System.getProperty("target-java", default_java_version)
+String javaVersionVarious = argsJavaVersion == "1.8" ? "8" : argsJavaVersion
+
+project.logger.lifecycle("No resource pack! Thank you.")
+project.logger.lifecycle("Compile: " + argsMinecraftVersion + "(" + argsMinecraftCompatibilityVersion + ")" + " - " + argsFabricVersion)
+
+
 sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+targetCompatibility = argsJavaVersion
 
 archivesBaseName = project.archives_base_name
 version = project.mod_version
@@ -20,20 +41,12 @@ repositories {
 
 dependencies {
 	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	minecraft "com.mojang:minecraft:${argsMinecraftVersion}"
+	mappings "net.fabricmc:yarn:${argsYarnMappings}:v2"
+	modImplementation "net.fabricmc:fabric-loader:${argsFabricLoaderVersion}"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": project.version
-	}
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${argsFabricVersion}"
 }
 
 tasks.withType(JavaCompile).configureEach {
@@ -45,14 +58,23 @@ java {
 	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
 	// if it is present.
 	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+	// withSourcesJar()
 }
 
 jar {
 	from("LICENSE") {
 		rename { "${it}_${project.archivesBaseName}"}
-	}
+	}	
 }
+
+task renameArtifacts (type: Copy) {
+    from ('build/libs')
+    include 'no-resource-pack-thx-' + mod_version + '.jar'
+    destinationDir file('build/libs')
+    rename 'no-resource-pack-thx-' + mod_version, 'no-resource-pack-thx-' + mod_version + '-MC' + argsMinecraftVersion
+}
+
+build.finalizedBy renameArtifacts
 
 // configure the maven publication
 publishing {
@@ -69,4 +91,42 @@ publishing {
 		// The repositories here will be used for publishing your artifact, not for
 		// retrieving dependencies.
 	}
+}
+
+macroPreprocessorSettings {
+	verbose = true
+	inPlace = false
+	remove = false
+
+	java {
+		enable = true
+		inPlace = false
+		remove = false
+	}
+
+	resources {
+		enable = true
+		inPlace = false
+		remove = false
+	}
+	
+	vars = [MOD_VERSION: version, MC_VERSION: argsMinecraftVersion, DEBUG: false]
+}
+
+replaceTokenPreprocessorSettings {
+	extensions = [ ".json" ]
+
+	java {
+		enable = true
+	}
+
+	resources {
+		enable = true
+	}
+
+	replace "@MOD_VERSION@": version
+	replace "@MC_VERSION@": argsMinecraftVersion
+	replace "@COMPATIBILITY_VERSION@": argsMinecraftCompatibilityVersion
+	replace "@FABRICLOADER_VERSION@": argsFabricLoaderVersion
+	replace "@JAVA_VERSION_VARIOUS@": javaVersionVarious
 }
