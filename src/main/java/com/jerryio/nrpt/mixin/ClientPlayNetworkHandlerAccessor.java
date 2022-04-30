@@ -9,7 +9,7 @@ import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.network.Packet;
 import net.minecraft.network.packet.c2s.play.ResourcePackStatusC2SPacket;
 
-//#if MC_VERSION >= "1.17"
+//#if MC_VERSION >= 1.17.0
 import net.minecraft.text.Text;
 //#endif
 
@@ -28,7 +28,7 @@ public interface ClientPlayNetworkHandlerAccessor {
     @Invoker
     void invokeFeedbackAfterDownload(java.util.concurrent.CompletableFuture<?> downloadFuture);
 
-    //#if MC_VERSION >= "1.17"
+    //#if MC_VERSION >= 1.17.0
     @Invoker
     static Text invokeGetServerResourcePackPrompt(Text defaultPrompt, Text customPrompt) {
         throw new AssertionError();
