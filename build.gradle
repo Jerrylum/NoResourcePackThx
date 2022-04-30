@@ -6,22 +6,28 @@ plugins {
 	id 'com.github.hexomod.replace.token.preprocessor' version '0.4'
 }
 
+import groovy.json.JsonSlurper
 
-// get args from gradle
+def jsonSlurper = new JsonSlurper()
+def profilesData = jsonSlurper.parse(new File("profiles.json"))
 
-String argsMinecraftVersion = System.getProperty("minecraft-version", default_minecraft_version)
-String argsMinecraftCompatibilityVersion = System.getProperty("minecraft-compatibility-version", default_minecraft_compatibility_version)
+String argsProfileName = System.getProperty("profile", profilesData.default)
 
-String argsYarnMappings = System.getProperty("yarn-mappings", default_yarn_mappings)
-String argsFabricLoaderVersion = System.getProperty("fabric-loader", default_loader_version)
+def profile = profilesData.profiles.stream().find {it["minecraft-version"] == argsProfileName}
 
-String argsFabricVersion = System.getProperty("fabric", default_fabric_version)
+String argsOrProfile(key, profile) {
+	return System.getProperty(key, profile[key])
+}
 
-String argsJavaVersion = System.getProperty("target-java", default_java_version)
+String argsMinecraftVersion = argsOrProfile("minecraft-version", profile)
+String argsMinecraftCompatibilityVersion = argsOrProfile("minecraft-compatibility-version", profile)
+String argsYarnMappings = argsOrProfile("yarn-mappings", profile)
+String argsFabricLoaderVersion = argsOrProfile("fabric-loader", profile)
+String argsFabricVersion = argsOrProfile("fabric", profile)
+String argsJavaVersion = argsOrProfile("target-java", profile)
 String javaVersionVarious = argsJavaVersion == "1.8" ? "8" : argsJavaVersion
 
-project.logger.lifecycle("No resource pack! Thank you.")
-project.logger.lifecycle("Compile: " + argsMinecraftVersion + "(" + argsMinecraftCompatibilityVersion + ")" + " - " + argsFabricVersion)
+project.logger.lifecycle("Args: " + argsMinecraftVersion + "(" + argsMinecraftCompatibilityVersion + ")" + " - " + argsFabricVersion)
 
 
 sourceCompatibility = JavaVersion.VERSION_17
@@ -69,9 +75,9 @@ jar {
 
 task renameArtifacts (type: Copy) {
     from ('build/libs')
-    include 'no-resource-pack-thx-' + mod_version + '.jar'
+    include archivesBaseName + '-' + mod_version + '.jar'
     destinationDir file('build/libs')
-    rename 'no-resource-pack-thx-' + mod_version, 'no-resource-pack-thx-' + mod_version + '-MC' + argsMinecraftVersion
+    rename archivesBaseName + '-' + mod_version, archivesBaseName + '-' + mod_version + '-MC' + argsMinecraftVersion
 }
 
 build.finalizedBy renameArtifacts
@@ -98,7 +104,7 @@ macroPreprocessorSettings {
 	inPlace = false
 	remove = false
 
-	java {
+	java { // ignored for some reasons
 		enable = true
 		inPlace = false
 		remove = false
